@@ -1,0 +1,86 @@
+openapi: 3.1
+info:
+  title: Minecraft Recipe Schema Specification (MRCS)
+  summary: An OpenAPI specification tailored towards Minecraft recipe documentation
+  version: 0.0.1
+contact:
+  name: @PieTheNiceGuy on discord
+components:
+  schemas:
+    ResourceLocation:
+      type: string
+      format: [a-z]+:[a-z0-9_-/]
+      description: An identifier used by the resource manager to identify resources. This includes item IDs, tag IDs, entity-type IDs, etc…
+      example: minecraft:stick
+    TagResourceLocation:
+      type: string
+      format: #[a-z]+:[a-z0-9_-/]
+      summary: The id of a tag resource location.
+      description: When dealing with multiple possible Resource locations, tags are quite useful as they allow one to group a handful of resource locations or other tags under one ID. Tags always start with a # in their name.
+      example: #minecraft:stone
+    RecipeType:
+      $ref: '#/components/schemas/ResourceLocation'
+      summary: The id of the recipe type.
+      description: When defining a recipe file, it is a required field to determine which codec should be utilized to serialize the recipe object.
+      example: minecraft:campfire
+    RecipeBase:
+      description: Used as a baseline to define common properties across all recipe files.
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/RecipeType'
+      required:
+        - type
+    Item:
+      description: A singular item with a stack size of one.
+      type: object
+      properties:
+        item:
+          $ref: '#/components/schemas/ResourceLocation'
+      required:
+        - item
+    ItemStack:
+      description: Same as the Item, but the stack size of the item needs to be specified.
+      type: object
+      properties:
+        item:
+          $ref: '#/components/schemas/Item'
+        count:
+          type: integer
+      required:
+        - item
+        - count
+    ItemTag:
+      description: A tag of items commonly used in recipes to accept similar inputs with identical outputs, without creating unique recipes for each input.
+      type: object
+      properties:
+        tag:
+          $ref: '#/components/schemas/TagResourceLocation'
+      required:
+        - tag
+    ItemTagStack:
+      description: Same as the ItemTag, but the stack size of the item needs to be specified.
+      type: object
+      properties:
+        tag:
+          $ref: '#/components/schemas/ItemTag'
+        count:
+          type: integer
+      required:
+        - tag
+        - count
+    ItemIngredient:
+      description: Accepts any item or item tag with a stack size of 1.
+      oneOf:
+        - $ref: '#/components/schemas/Item'
+        - $ref: '#/components/schemas/ItemTag'
+    ItemStackIngredient:
+      description: Accepts any item or item tag with a required stack size.
+      oneOf:
+        - $ref: '#/components/schemas/ItemStack'
+        - $ref: '#/components/schemas/ItemTagStack'
+    CommonIngredient:
+      description: Accepts any item or item tag where stack size is optional.
+      oneOf:
+        - $ref: '#/components/schemas/ItemIngredient'
+        - $ref: '#/components/schemas/ItemStackIngredient'
